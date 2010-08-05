@@ -105,6 +105,18 @@ module ActiveMerchant
       end
     end
     
+    def assert_attribute_valid(validateable, attribute)
+      clean_backtrace do
+        assert validateable.errors[attribute].empty?, "Attribute #{attribute} expected to be valid"
+      end
+    end
+    
+    def assert_attribute_not_valid(validateable, attribute)
+      clean_backtrace do
+        assert validateable.errors[attribute].any?, "Attribute #{attribute} expected not to be valid"
+      end
+    end
+    
     private
     def clean_backtrace(&block)
       yield    

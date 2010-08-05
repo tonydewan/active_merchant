@@ -1,6 +1,7 @@
 require 'time'
 require 'date'
 require 'active_merchant/billing/expiry_date'
+require 'active_model'
 
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
@@ -36,12 +37,15 @@ module ActiveMerchant #:nodoc:
     #
     class CreditCard
       include CreditCardMethods
-      include Validateable
+      include ActiveModel::Validations
+      include ActiveModel::MassAssignmentSecurity
+      include MassAssignment
       
       ## Attributes
       
       cattr_accessor :require_verification_value
       self.require_verification_value = true
+      attr_protected :requires_verification_value
       
       # Essential attributes for a valid, non-bogus creditcards
       attr_accessor :number, :month, :year, :type, :first_name, :last_name
@@ -52,6 +56,8 @@ module ActiveMerchant #:nodoc:
       # Optional verification_value (CVV, CVV2 etc). Gateways will try their best to 
       # run validation on the passed in value if it is supplied
       attr_accessor :verification_value
+      
+      validate :validate
 
       # Provides proxy access to an expiry date object
       def expiry_date
@@ -92,6 +98,7 @@ module ActiveMerchant #:nodoc:
       end
       
       def validate
+        cleanup_attributes
         validate_essential_attributes
 
         # Bogus card is pretty much for testing purposes. Lets just skip these extra tests if its used
@@ -109,7 +116,7 @@ module ActiveMerchant #:nodoc:
       
       private
       
-      def before_validate #:nodoc: 
+      def cleanup_attributes #:nodoc: 
         self.month = month.to_i
         self.year  = year.to_i
         self.start_month = start_month.to_i unless start_month.nil?
@@ -121,7 +128,7 @@ module ActiveMerchant #:nodoc:
       
       def validate_card_number #:nodoc:
         errors.add :number, "is not a valid credit card number" unless CreditCard.valid_number?(number)
-        unless errors.on(:number) || errors.on(:type)
+        unless errors[:number].any? || errors[:type].any?
           errors.add :type, "is not the correct card type" unless CreditCard.matching_type?(number, type)
         end
       end
