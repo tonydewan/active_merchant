@@ -142,7 +142,7 @@ module ActiveMerchant #:nodoc:
         errors.add :first_name, "cannot be empty"      if @first_name.blank?
         errors.add :last_name,  "cannot be empty"      if @last_name.blank?
         errors.add :month,      "is not a valid month" unless valid_month?(@month)
-        errors.add :year,       "expired"              if expired?
+        errors.add :year,       "expired"              if expired? && valid_expiry_year?(@year)
         errors.add :year,       "is not a valid year"  unless valid_expiry_year?(@year)
       end
       
