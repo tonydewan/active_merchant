@@ -37,6 +37,10 @@ module ActiveMerchant #:nodoc:
         commit(request)
       end
       
+      def refund(money, reference, options = {})
+        commit(build_reference_request(:credit, money, reference, options), options)
+      end
+      
       # Adds or modifies a recurring Payflow profile.  See the Payflow Pro Recurring Billing Guide for more details:
       # https://www.paypal.com/en_US/pdf/PayflowPro_RecurringBilling_Guide.pdf
       #    
